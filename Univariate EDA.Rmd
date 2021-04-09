@@ -1,0 +1,198 @@
+---
+title: "Univariate Exploratory Data Analysis"
+author: "Vinaykumar Pandey"
+date: "08/04/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Include the library file
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(plotrix)
+
+```
+
+#Read the dataset 
+
+```{r}
+export_data <- read.csv("india_export.csv")
+```
+
+#Storing file in data frame
+```{r}
+export_data <- data.frame(export_data)
+
+```
+
+# Display all the columns of the dataset
+
+```{r}
+colnames(export_data)
+
+```
+
+
+#Display structure of the dataset
+```{r}
+str(export_data)
+
+```
+
+#Grouping the NA values
+
+```{r}
+export_data<-data.frame(lapply(export_data,function(x) {gsub("#N/A",NA,x)}))
+```
+
+# Total NA values
+```{r}
+total_NA<-sapply(export_data,function(x) sum(is.na(x)==TRUE))
+
+total_NA 
+
+```
+
+#finding the column with Null values percentge
+```{r}
+
+for(i in 1:ncol(export_data)) {
+  colum_name <- colnames(export_data[i])
+  Null_perc <- sum(is.na(export_data[,i]))/length(export_data[,i])
+  if (Null_perc > 0.05) {
+    print(paste("Column ", colum_name, " has ", round(Null_perc*100, 3), "% Null values"))
+  }
+}
+```
+
+
+#separate the date column
+
+```{r}
+
+export_data<- separate(export_data, col=Year, into = c("Year", "Year_To"), sep = "-")
+
+```
+```{r}
+
+export_data
+```
+
+```{r}
+
+export_data <- select(export_data, -Year_To) 
+
+export_data
+```
+
+#Excluding the NA values
+
+```{r}
+
+export_dataset <- na.exclude(export_data)
+
+```
+
+```{r}
+View(export_dataset)
+```
+
+```{r}
+year_export=as.Date(export_dataset$Year,'%Y')
+
+year_export=as.numeric(format(year_export,'%Y'))
+
+export_dataset["year_export"]=NA
+export_dataset$year_export=year_export
+export_dataset$year_export=as.integer(export_dataset$year_export)
+
+```
+
+```{r}
+export_dataset$Consumer.Electronics<-as.numeric(export_dataset$Consumer.Electronics)
+export_dataset$Industrial.Electronics<-as.numeric((export_dataset$Industrial.Electronics))
+export_dataset$Computer.Hardware<-as.numeric(export_dataset$Computer.Hardware)
+export_dataset$Communication...Broadcast.Equipments<-as.numeric(export_dataset$Communication...Broadcast.Equipments)
+export_dataset$Electronics.Components<-as.numeric(export_dataset$Electronics.Components)
+export_dataset$Sub.Total<-as.numeric(export_dataset$Sub.Total)
+export_dataset$Computer.Software<-as.numeric(export_dataset$Computer.Software)
+export_dataset$Total<-as.numeric((export_dataset$Total))
+
+```
+
+
+```{r}
+
+head(export_dataset)
+```
+
+```{r}
+
+export_dataset<-select(export_dataset, -year_export)
+```
+
+
+```{r}
+
+export_dataset
+```
+
+
+#Finading the Correlation 
+
+```{r}
+cor(export_dataset$Consumer.Electronics, export_dataset$Industrial.Electronics, method="pearson")
+
+cor(export_dataset$Consumer.Electronics, export_dataset$Computer.Hardware, method="pearson")
+
+cor(export_dataset$Consumer.Electronics, export_dataset$Communication...Broadcast.Equipments, method = "pearson")
+
+
+```
+
+
+#The histogram 
+
+```{r}
+hist(export_dataset$Consumer.Electronics, xlab = "Consumer Electronics", col = c("blue","green","pink","red","yellow"), xlim = c(500,3000), ylim = c(1,5), border = "black", main = "Exported Electronics", labels = TRUE)
+
+colour <- c("red","green","yellow","light green", "pink", "blue", "black","orange","light blue")
+
+```
+```{r}
+
+barplot(export_dataset$Industrial.Electronics, col=colour, main = "Bar chart of the Industrial Electronics", xlab = "Industrial Electronics",  ylim = c(0,1.5*max(export_dataset$Industrial.Electronics)))
+```
+
+```{r}
+T_Elect_eq <- export_dataset$Communication...Broadcast.Equipments
+T_El <- table(T_Elect_eq)
+
+```
+
+```{r}
+
+#pie(export_dataset$Communication...Broadcast.Equipments, col = colour)
+
+
+pie3D(export_dataset$Communication...Broadcast.Equipments, labels = export_dataset$Year, main = "Electronic Equipments", explode=0.1, radius=.9, labelcex = 1.2,  start=0.7)
+
+
+
+```
+
+
+
+
+```{r}
+
+ggplot(export_dataset, aes(x=Computer.Hardware, y=Computer.Software)) + geom_point()
+```
+
